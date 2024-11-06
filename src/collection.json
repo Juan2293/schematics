@@ -4,6 +4,10 @@
     "crud": {
       "description": "A blank schematic.",
       "factory": "./crud/index#crud"
+    },
+    "crud-angular": {
+      "description": "A blank schematic.",
+      "factory": "./crud-angular/index#crudAngular"
     }
   }
 }
