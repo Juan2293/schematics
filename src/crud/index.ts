@@ -3,18 +3,19 @@ import { strings } from '@angular-devkit/core';
 import { QUERY_METADA_FROM_TABLE } from '../common/constants/postgres-queries';
 import { ColumnMetadata } from '../common/interfaces/metadata.interface';
 import { PostgresService } from '../config/postgres.config';
-import { addModuleToAppImports, addNodeDependency,createGenericService } from '../common/rules/index';
+import { addModuleToAppImports, addNodeDependency,createGenericComponents,
+  addGlobalPipesToMain
+ } from '../common/rules/index';
 import {  StringUtil as stringUtil } from '../common/utils/index';
 import { createDTO, createEntity } from '../common/functions/index';
+import { Options } from '../common/interfaces';
 
 
-export function crud(options: any): Rule {
+export function crud(options: Options): Rule {
 
   return async (tree: Tree, context: SchematicContext) => {
 
     options.name = stringUtil.replaceUnderscoresWithHyphens(options.table);
-
-    context.logger.info("Starting schematics CRUD");
 
     const metadata: ColumnMetadata[] = await PostgresService.executeQuery<ColumnMetadata>(QUERY_METADA_FROM_TABLE, [options.table]);
 
@@ -24,9 +25,8 @@ export function crud(options: any): Rule {
     const entity = createEntity(metadata, className);
     const dtoContent = createDTO(metadata, `Create${className}`);
 
-
-    tree.create(`src/${pathFileName}/dto/create-${pathFileName}.dto.ts`, dtoContent);
-    tree.create(`src/${pathFileName}/entities/${pathFileName}.entity.ts`, entity);
+    tree.create(`${options.path}/${pathFileName}/dto/create-${pathFileName}.dto.ts`, dtoContent);
+    tree.create(`${options.path}/${pathFileName}/entities/${pathFileName}.entity.ts`, entity);
 
 
     const templateSource = apply(url('./files'), [
@@ -34,13 +34,21 @@ export function crud(options: any): Rule {
         ...options,
         ...strings,
       }),
-      move(`./src/${pathFileName}`),
+      move(`./${options.path}/${pathFileName}`),
     ]);
+
+    context.logger.info("Before return chain schematics CRUD");
+
 
     return chain([
       mergeWith(templateSource),
-      createGenericService(options),
+      createGenericComponents({
+        options: options,
+        templatePath: '../common/files/nest-crud-generic/',
+        targetPath: `${options.path}/common/`
+      }),
       addNodeDependency({
+        "pg": "^8.13.1",
         "uuid": "^10.0.0",
         "class-transformer": "^0.5.1",
         "class-validator": "^0.14.1",
@@ -50,7 +58,10 @@ export function crud(options: any): Rule {
       }),
       addModuleToAppImports(
         `${stringUtil.toClaseName(options.table)}Module`,
-        `src/${pathFileName}/${pathFileName}.module`)
+        `./${pathFileName}/${pathFileName}.module`,
+        options.path
+      ),
+      addGlobalPipesToMain()
     ]);
   };
 

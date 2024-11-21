@@ -5,4 +5,5 @@ export interface ColumnMetadata {
     nullable:     string;
     table:        string;
     pk:           boolean;
+    unique:       boolean;
 }

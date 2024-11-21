@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Param, Patch, Post, Delete } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Delete, Query } from '@nestjs/common';
 import {  <%= classify(name) %>Service } from './<%= dasherize(name) %>.service';
 import {  Create<%= classify(name) %>Dto } from './dto/create-<%= dasherize(name) %>.dto';
 import {  Update<%= classify(name) %>Dto } from './dto/update-<%= dasherize(name) %>.dto';
+import { PaginationDto } from '../common/dtos/pagination.dto';
 
 @Controller('<%= dasherize(name) %>')
 export class <%= classify(name) %>Controller {
@@ -11,8 +12,8 @@ export class <%= classify(name) %>Controller {
     ){}
 
     @Get()
-    getAll(){
-        return this.<%= camelize(name) %>Service.findAll();
+    getAll(@Query() paginationDto: PaginationDto){
+        return this.<%= camelize(name) %>Service.findAll(paginationDto);
     }
 
     @Get(':id')

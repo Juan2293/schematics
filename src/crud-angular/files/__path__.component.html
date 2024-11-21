@@ -1,0 +1,57 @@
+
+<p-toolbar styleClass="mb-4 gap-2">
+    <ng-template pTemplate="left">
+        <p-button severity="success" label="New" icon="pi pi-plus" class="mr-2" (onClick)="openNew()" />
+        <!-- <p-button 
+            severity="danger" 
+            label="Delete" 
+            icon="pi pi-trash" 
+            (onClick)="deleteSelectedProducts()" 
+            [disabled]="!selectedProducts || !selectedProducts.length" /> -->
+    </ng-template>
+
+
+</p-toolbar>
+
+<div class="card">
+    <p-table [columns]="cols" [value]="dataSource" [tableStyle]="{ 'min-width': '50rem' }"
+    [paginator]="true"
+    [rows]="5">
+        <ng-template pTemplate="header" let-columns>
+            <tr>
+                <th *ngFor="let col of columns">
+                    {{ col.header }}
+                </th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-rowData let-columns="columns">
+            <tr>
+                <td *ngFor="let col of columns">
+                    {{ rowData[col.field] }}
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+
+
+<p-dialog [(visible)]="<%= camelize(name) %>Dialog" [style]="{ width: '450px' }" header="New item" [modal]="true"
+    styleClass="p-fluid">
+    <ng-template pTemplate="content">
+
+        <% fields.forEach(field => { %>
+        <div class="field">
+            <label for="name"><%= field.label %></label>
+            <input  type="<%= field.type %>" pInputText  [(ngModel)]="<%= camelize(name)%>.<%= field.name %>"  required autofocus />
+        </div> 
+
+        <% }) %>
+
+    </ng-template> 
+
+    <ng-template pTemplate="footer">
+        <p-button label="Cancel" icon="pi pi-times" [text]="true" (onClick)="hideDialog()" />
+        <p-button label="Save" icon="pi pi-check" [text]="true" (onClick)="save()" />
+    </ng-template>
+</p-dialog>

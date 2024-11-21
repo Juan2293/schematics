@@ -1,7 +1,7 @@
 import {  Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { BaseService } from 'src/common/services/generic.service';
+import { BaseService } from '../common/services/generic.service';
 
 import { Create<%= classify(name) %>Dto } from './dto/create-<%= dasherize(name) %>.dto';
 import { <%= classify(name) %> } from './entities/<%= dasherize(name) %>.entity';
@@ -11,7 +11,7 @@ export class <%= classify(name) %>Service extends BaseService<<%= classify(name)
 
     constructor(
         @InjectRepository(<%= classify(name) %>)
-        <%= camelize(name) %>Repository: Repository<<%= classify(name) %>>,
+        private readonly <%= camelize(name) %>Repository: Repository<<%= classify(name) %>>,
       ) {
         super(<%= camelize(name) %>Repository); 
       }

@@ -38,19 +38,31 @@ export class TypeMapperUtil {
     }
   }
 
+  
+  static mapSqlNullableToOptional(sqlNullable: string): string {
+    switch (sqlNullable.toLowerCase()) {
+      case 'yes':
+        return '@IsOptional()';
+      default:
+        return '';
+    }
+  }
 
   static mapSqlTypeToTsValidation(sqlType: string): string {
     switch (sqlType.toLowerCase()) {
-      // Numeric Types
+      // Integer Types
       case 'integer':
       case 'smallint':
       case 'bigint':
+        return '@IsInt()';
+  
+      // Decimal or floating-point types
       case 'numeric':
       case 'decimal':
       case 'real':
       case 'double precision':
         return '@IsNumber()';
-
+  
       // Text Types
       case 'character varying':
       case 'varchar':
@@ -58,18 +70,18 @@ export class TypeMapperUtil {
       case 'char':
       case 'uuid':
         return '@IsString()';
-
+  
       // Boolean Type
       case 'boolean':
         return '@IsBoolean()';
-
+  
       // Date and Time Types
       case 'date':
       case 'time':
       case 'timestamp':
       case 'timestamp with time zone':
         return '@IsDate()';
-
+  
       default:
         return '';
     }
@@ -104,6 +116,7 @@ export class TypeMapperUtil {
         return 'time';
       case 'timestamp':
       case 'timestamp with time zone':
+      case 'timestamp without time zone':
         return 'timestamp';
       default:
         throw new Error(`El tipo SQL "${sqlType}" no está soportado`);
@@ -114,18 +127,24 @@ export class TypeMapperUtil {
 
     const typeOrmDecorators = [];
 
-    const ormType = TypeMapperUtil.mapSqlTypeToOrmType(column.type);
-    let columnDecorator = `@Column({ name: '${column.name}', type: '${ormType}'`;
-
-    columnDecorator += ' })';
-    typeOrmDecorators.push(columnDecorator);
-
     if (column.pk) {
       const primaryDecorator = column.type === 'uuid'
         ? `@PrimaryGeneratedColumn('uuid')`
         : `@PrimaryGeneratedColumn()`;
       typeOrmDecorators.push(primaryDecorator);
+      return typeOrmDecorators.join('\n  ');
     }
+
+    const ormType = TypeMapperUtil.mapSqlTypeToOrmType(column.type);
+    let columnDecorator = `@Column({ name: '${column.name}', type: '${ormType}'`;
+
+    if(column.unique){
+      columnDecorator += `, unique: true`;
+    }
+
+    columnDecorator += ' })';
+    typeOrmDecorators.push(columnDecorator);
+
 
     return typeOrmDecorators.join('\n  ');
   }
