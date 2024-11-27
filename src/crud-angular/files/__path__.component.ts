@@ -49,8 +49,8 @@ async  ngOnInit() {
      await this.get<%= classify(name) %>s();   
   }
  
-  async get<%= classify('<%= camelize(name) %>') %>s(){
-    await this.commonService.get(<%= camelize(name) %>s)
+  async get<%= classify(name) %>s(){
+    await this.commonService.get('<%= camelize(name) %>s')
          .then((response : T ) => {
            this.data =  response as any [];
            console.log('Response from API:', response);
