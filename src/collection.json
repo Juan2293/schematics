@@ -9,6 +9,10 @@
       "description": "A blank schematic.",
       "factory": "./crud-angular/index#crudAngular"
     },
+    "auth-back": {
+      "description": "A blank schematic.",
+      "factory": "./auth-back/index#authBack"
+    },
     "login": {
       "description": "A blank schematic.",
       "factory": "./login/index#login"
