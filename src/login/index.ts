@@ -1,41 +1,33 @@
 import { apply, chain, mergeWith, Rule, SchematicContext, Tree, template, url, strings, move } from '@angular-devkit/schematics';
-import * as ts from 'typescript';
+
 import { addNodeDependency, createGenericComponents, updateAppRoutes } from '../common/rules';
 import { StringUtil } from '../common/utils';
-import { Attribute, ClassAttributes } from '../common/interfaces/create-generic.interface';
 
 
-export function crudAngular(_options: any): Rule {
+
+export function login(): Rule {
   return async (_tree: Tree, _context: SchematicContext) => {
 
-    const classAttributes = getAttributesFromClassOrInterface(_options.path, _tree);
-    _options.cols = createColsArray(classAttributes.attributes);
-    _options.name = classAttributes.name;
-    _options.path = StringUtil.toKebabCase(classAttributes.name);
-
-    _options.fields = classAttributes.attributes.map(attribute => {
-      return { label: StringUtil.toClaseName(attribute.name), type: getHtmlInputType(attribute.type), name: attribute.name }
-    });
+  
+   let _name:any = 'login'; //classAttributes.name;
     
     const templateSource = apply(url('./files'), [
       template({
-        ..._options,
+        ..._name,
         ...strings
       }),
-      move(`./src/app/${StringUtil.toKebabCase(_options.name)}`),
+      move(`./src/app/${StringUtil.toKebabCase(_name)}`),
     ]);
 
-   // addRouteToRoutesArray(_tree, 'src/app/app.routes.ts', `{ path: ${_options.path}, component: ${_options.name}Component }`);
-    // addRouteToRoutesArray(_tree, 'src/app/app.routes.ts', _options.path, `src/app/${_options.path}/_options.path.component`, `${_options.name}Component`);
-    
+   
     const routesPath = './src/app/app.routes.ts'; 
-    const componentPath = `./${_options.name.toLowerCase()}/${_options.name.toLowerCase()}.component`;
+    const componentPath = `./${_name.toLowerCase()}/${_name.toLowerCase()}.component`;
 
-    updateAppRoutes(_tree, routesPath, _options.name, componentPath);
+    updateAppRoutes(_tree, routesPath, capitalizeFirstLetter(_name), componentPath);
     return chain([
       mergeWith(templateSource),
       createGenericComponents({
-        options: _options,
+        options: _name,
         templatePath: '../common/files/angular-crud-generic/',
         targetPath: 'src/app/common/'
       }),
@@ -45,72 +37,16 @@ export function crudAngular(_options: any): Rule {
       
     ]);
   };
-}
 
-
-
-function getAttributesFromClassOrInterface(filePath: string, tree: Tree): ClassAttributes {
-  const fileContent = tree.read(filePath)?.toString('utf-8');
-  if (!fileContent) {
-    throw new Error(`No se pudo leer el archivo en ${filePath}`);
+  function capitalizeFirstLetter(name: string): string {
+    return name.charAt(0).toUpperCase() + name.slice(1);
   }
-
-  const sourceFile = ts.createSourceFile(
-    filePath,
-    fileContent,
-    ts.ScriptTarget.Latest,
-    true
-  );
-
-  let className = '';
-  const attributes: Attribute[] = [];
-
-  ts.forEachChild(sourceFile, (node) => {
-    if (ts.isInterfaceDeclaration(node) || ts.isClassDeclaration(node)) {
-      className = node.name?.getText() || '';  //nombre de la clase o interfaz
-      node.members.forEach(member => {
-        if (ts.isPropertySignature(member) || ts.isPropertyDeclaration(member)) {
-          const propertyName = member.name?.getText(); //nombre de la propiedad
-          if (propertyName) {
-            attributes.push({
-              name: member.name?.getText(),
-              type: member.type?.getText() ?? ''
-            });
-          }
-        }
-      });
-    }
-  });
-
-  return { name: className, attributes: attributes };
+  
 }
 
-function createColsArray(attributes: Attribute[]): string {
-  return `[
-    ${attributes
-      .map(attr => `{ field: '${attr.name}', header: '${capitalize(attr.name)}' , visible: ${attr.name !== 'id'} }`)
-      .join(',\n    ')}
-  ]`;
-}
 
-function capitalize(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
 
-function getHtmlInputType(tsType: string): string {
-  const typeMap: { [key: string]: string } = {
-    string: "text",
-    number: "number",
-    boolean: "checkbox",
-    date: "date",
-    email: "email",
-    password: "password",
-    url: "url",
-  };
 
-  // Devolvemos el tipo HTML si existe en el mapa, si no, por defecto "text"
-  return typeMap[tsType] || "text";
-}
 // export function addRouteToRoutesArray(
 //   tree: Tree,
 //   routesFilePath: string,

@@ -1,57 +1,109 @@
-
-<p-toolbar styleClass="mb-4 gap-2">
-    <ng-template pTemplate="left">
-        <p-button severity="success" label="New" icon="pi pi-plus" class="mr-2" (onClick)="openNew()" />
-        <!-- <p-button 
-            severity="danger" 
-            label="Delete" 
-            icon="pi pi-trash" 
-            (onClick)="deleteSelectedProducts()" 
-            [disabled]="!selectedProducts || !selectedProducts.length" /> -->
-    </ng-template>
-
-
-</p-toolbar>
-
 <div class="card">
-    <p-table [columns]="cols" [value]="dataSource" [tableStyle]="{ 'min-width': '50rem' }"
-    [paginator]="true"
-    [rows]="5">
-        <ng-template pTemplate="header" let-columns>
-            <tr>
-                <th *ngFor="let col of columns">
-                    {{ col.header }}
-                </th>
-            </tr>
+    <p-toolbar styleClass="mb-4 gap-2">
+        <ng-template pTemplate="left">
+            <p-button
+                severity="success"
+                label="New"
+                icon="pi pi-plus"
+                class="mr-4"
+                (onClick)="showDialog()"
+                />
+            
         </ng-template>
-        <ng-template pTemplate="body" let-rowData let-columns="columns">
-            <tr>
-                <td *ngFor="let col of columns">
-                    {{ rowData[col.field] }}
-                </td>
-            </tr>
+    
+        
+    </p-toolbar>
+    
+    
+        <p-table #dt [value]="data" [paginator]="true" [rowHover]="true"  [rows]="5" [tableStyle]="{ 'min-width': '50rem' }" sortMode="multiple" [globalFilterFields]="globalFilterFields">
+            <ng-template pTemplate="caption">
+                <div style="    display: flex;
+                justify-content: space-between;
+                align-content: center;
+                align-items: center;">
+                    <h5 class="m-0">Manage {{title}}</h5>
+                    <span class="p-input-icon-left">
+                        <input
+                            pInputText
+                            type="text"
+                            (input)="onInput($event)"
+                            class="p-inputtext p-component w-full"
+                            placeholder="Search..." />
+                        
+                    </span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th  class="column" *ngFor="let col of visibleCols">{{ col.header }}
+                    </th>
+                    <th class="column"> Actions</th>
+                    <th style="width: 5rem"></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-data>
+                <tr >
+                    <td class="column" *ngFor="let col of visibleCols">{{ data[col.field] }}</td>
+    
+                    <td class="column">
+                        <p-button
+                            icon="pi pi-pencil"
+                            class="mr-2"
+                            [rounded]="true"
+                            [outlined]="true"
+                            severity="success"
+                            (onClick)="updateForm(data)" />
+                        <p-button
+                            icon="pi pi-trash"
+                            severity="danger"
+                            [rounded]="true"
+                            [outlined]="true"
+                            (onClick)="confirmDelete($event,data.id)" />
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+    
+    
+    <p-dialog [header]="dialogHeader"  [modal]="true" [(visible)]="visible" [style]="{ width: '25rem' }" styleClass="p-fluid">
+        <ng-template pTemplate="content">
+        <div style="margin-bottom: 15px;">
+            <span *ngIf="edit" class="p-text-secondary block">Update your information.</span>
+        </div>
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+     
+            <div *ngFor="let col of cols" class="p-fluid">
+                <div *ngIf="col.field !== 'id'" class="p-field p-grid" style="margin-bottom: 10px;">
+                   
+                    <label for="{{ col.header }}" class="p-col-12 p-md-3">{{ col.header }}</label>
+                    <div *ngIf="col.type === 'number'; else textInput" class="p-col-12 p-md-9">
+                        <input pInputText  type="number"  id="{{ col.header }}" formControlName="{{ col.field }}" class="p-inputtext p-component w-full" autocomplete="off" />
+                    </div>
+                    <ng-template #textInput>
+                        <div class="p-col-12 p-md-9">
+                          <input
+                            pInputText
+                            id="{{ col.header }}"
+                            formControlName="{{ col.field }}"
+                            class="p-inputtext p-component w-full"
+                            autocomplete="off"
+                          />
+                        </div>
+                      </ng-template>
+                </div>
+            </div>
+          
+            <div class="flex justify-between" style="display: flex; justify-content:space-between">
+                <p-button label="Cancel" severity="secondary"  icon="pi pi-times"  (onClick)="visible = false" />
+                <p-button  *ngIf="!edit" label="Save"  icon="pi pi-check"  type="submit"/>
+                <p-button *ngIf="edit" label="Edit" icon="pi pi-check"  (onClick)="editRecord()"/>
+            </div>
+    
+            
+        </form>
         </ng-template>
-    </p-table>
-</div>
-
-
-
-<p-dialog [(visible)]="<%= camelize(name) %>Dialog" [style]="{ width: '450px' }" header="New item" [modal]="true"
-    styleClass="p-fluid">
-    <ng-template pTemplate="content">
-
-        <% fields.forEach(field => { %>
-        <div class="field">
-            <label for="name"><%= field.label %></label>
-            <input  type="<%= field.type %>" pInputText  [(ngModel)]="<%= camelize(name)%>.<%= field.name %>"  required autofocus />
-        </div> 
-
-        <% }) %>
-
-    </ng-template> 
-
-    <ng-template pTemplate="footer">
-        <p-button label="Cancel" icon="pi pi-times" [text]="true" (onClick)="hideDialog()" />
-        <p-button label="Save" icon="pi pi-check" [text]="true" (onClick)="save()" />
-    </ng-template>
-</p-dialog>
+    </p-dialog>
+    
+    <p-toast />
+    <p-confirmDialog />

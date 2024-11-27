@@ -8,6 +8,10 @@
     "crud-angular": {
       "description": "A blank schematic.",
       "factory": "./crud-angular/index#crudAngular"
+    },
+    "login": {
+      "description": "A blank schematic.",
+      "factory": "./login/index#login"
     }
   }
 }
