@@ -1,0 +1,108 @@
+/* Asegura que el login ocupe toda la pantalla */
+.min-h-screen {
+    min-height: 100vh;
+  }
+
+  .block{
+    font-weight: lighter;
+    padding-bottom: 8px;
+    color: black;
+    font-family:sans-serif
+  }
+  
+  /* Diseño de la tarjeta */
+  .card {
+    width: 380px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Espaciado de los campos */
+  .field {
+    margin-bottom: 2.5rem;
+  }
+  
+  /* Personalización del texto de error */
+  .p-error {
+    display: block;
+    font-size: 0.875rem;
+    color: #d32f2f;
+  }
+  
+  /* Diseño del botón de inicio de sesión */
+  button.p-button {
+    background-color: #8bc34a;
+    border: none;
+    color: white;
+    font-weight: lighter;
+  
+    transition: background-color 0.3s ease;
+  }
+  
+  button.p-button:hover {
+    background-color: #8bc34a;
+  }
+  
+  /* Ajuste en el tamaño de los campos */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #8bc34a;;
+    width: 80%;
+    transition: border-color 0.3s ease;
+  }
+  
+  input[type="text"]:focus,
+  input[type="email"]:focus,
+  input[type="password"]:focus {
+    border-color: #8bc34a;
+    outline: none;
+  }
+  
+  /* Estilos adicionales para el texto */
+  h2 {
+    font-size: 1.75rem;
+    color: #8bc34a;
+    font-weight: 600;
+    font-family: sans-serif;
+  }
+  
+  .text-center {
+    text-align: center;
+  }
+  
+  /* Ajuste en el ancho de la tarjeta dependiendo del tamaño de pantalla */
+  @media (max-width: 600px) {
+    .card {
+      width: 100%;
+      padding: 1.5rem;
+    }
+  }
+  
+  @media (max-width: 1024px) {
+    .card {
+      width: 80%;
+    }
+  }
+
+
+  .gradient-card {
+    background: linear-gradient(135deg, #f7f8f6, #fafafa); 
+    color: rgb(255, 255, 255); 
+    border-radius: 12px; 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+    padding: 1.5rem;
+  }
+  .aref{
+    display: flex;
+    color: #0e73f7;
+    justify-content:flex-end
+  }
+  .label{
+    margin-left: 30px;
+    padding-bottom: 10px;
+  }

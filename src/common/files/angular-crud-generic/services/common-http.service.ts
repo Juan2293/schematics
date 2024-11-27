@@ -7,7 +7,7 @@ import { lastValueFrom } from 'rxjs';
 })
 export class CommonHttpService<T> {
 
-  url: string = `http://localhost:3000`;
+  url: string = `http://localhost:3000/`;
 
   constructor(private http: HttpClient) { }
 
