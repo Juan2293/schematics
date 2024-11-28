@@ -1,8 +1,9 @@
 import { apply, chain, mergeWith, Rule, SchematicContext, Tree, template, url, strings, move } from '@angular-devkit/schematics';
 import * as ts from 'typescript';
-import { addNodeDependency, createGenericComponents, updateAppRoutes } from '../common/rules';
+import { addNodeDependency, createGenericComponents, modifyAppConfig, updateAppRoutes } from '../common/rules';
 import { StringUtil } from '../common/utils';
 import { Attribute, ClassAttributes } from '../common/interfaces/create-generic.interface';
+import { capitalizeFirstLetter } from '../login';
 
 
 export function crudAngular(_options: any): Rule {
@@ -31,7 +32,7 @@ export function crudAngular(_options: any): Rule {
     const routesPath = './src/app/app.routes.ts'; 
     const componentPath = `./${_options.name.toLowerCase()}/${_options.name.toLowerCase()}.component`;
 
-    updateAppRoutes(_tree, routesPath, _options.name, componentPath);
+    updateAppRoutes(_tree, routesPath, capitalizeFirstLetter(_options.name), componentPath);
     return chain([
       mergeWith(templateSource),
       createGenericComponents({
@@ -42,7 +43,7 @@ export function crudAngular(_options: any): Rule {
        addNodeDependency({
         "primeng": "^17.18.11",
       }),
-      
+      modifyAppConfig()
     ]);
   };
 }

@@ -44,6 +44,10 @@ export class LoginComponent <T> {
       }
       await this.commonService.post('auth/login',login)
       .then((response : T ) => {
+        const auth : any = response; 
+        if (auth?.token) {
+          localStorage.setItem('authToken', auth.token); 
+        }
         console.log('Response from API:', response);
       })
       .catch(error => {

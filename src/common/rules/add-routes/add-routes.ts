@@ -23,6 +23,9 @@ export function updateAppRoutes(tree: Tree, path: string, componentName: string,
  
   const newRoute = `{ path: '${componentName.toLowerCase()}', loadComponent: () => import('${componentPath}').then(m => m.${componentName}Component) },`;
   const routesMarker = 'export const routes: Routes = [';
+  if (sourceText.includes(newRoute)) {
+    return tree; 
+  }
   const updatedSource = sourceText.replace(routesMarker, `${routesMarker}\n    ${newRoute}`);
 
   

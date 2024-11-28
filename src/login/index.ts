@@ -1,6 +1,6 @@
 import { apply, chain, mergeWith, Rule, SchematicContext, Tree, template, url, strings, move } from '@angular-devkit/schematics';
 
-import { addNodeDependency, createGenericComponents, updateAppRoutes } from '../common/rules';
+import { addNodeDependency, createGenericComponents, modifyAppConfig, updateAppRoutes } from '../common/rules';
 import { StringUtil } from '../common/utils';
 
 
@@ -24,6 +24,7 @@ export function login(): Rule {
     const componentPath = `./${_name.toLowerCase()}/${_name.toLowerCase()}.component`;
 
     updateAppRoutes(_tree, routesPath, capitalizeFirstLetter(_name), componentPath);
+    
     return chain([
       mergeWith(templateSource),
       createGenericComponents({
@@ -34,18 +35,23 @@ export function login(): Rule {
        addNodeDependency({
         "primeng": "^17.18.11",
       }),
-      
+      createGenericComponents({
+        options: _name,
+        templatePath: '../common/files/interceptors/',
+        targetPath: 'src/app/interceptors/'
+      }),
+      modifyAppConfig(true)
     ]);
   };
 
-  function capitalizeFirstLetter(name: string): string {
-    return name.charAt(0).toUpperCase() + name.slice(1);
-  }
+  
   
 }
 
 
-
+export function capitalizeFirstLetter(name: string): string {
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
 
 // export function addRouteToRoutesArray(
 //   tree: Tree,
