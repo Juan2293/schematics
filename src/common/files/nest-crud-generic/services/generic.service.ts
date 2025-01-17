@@ -4,10 +4,11 @@ import { BadRequestException, Injectable, InternalServerErrorException, Logger, 
 import { DeepPartial, FindOptionsWhere, Repository } from 'typeorm';
 import { BaseEntity } from '../entities/generic.interface';
 import { PaginationDto } from '../dtos/pagination.dto';
+import { IBaseService } from '../interfaces/generic.service.interface';
 
 
 @Injectable()
-export abstract class BaseService<TEntity extends BaseEntity, TDto> {
+export class BaseService<TEntity extends BaseEntity, TDto> implements IBaseService<TEntity, TDto> {
 
   private readonly logger = new Logger('BaseService');
 
@@ -15,9 +16,9 @@ export abstract class BaseService<TEntity extends BaseEntity, TDto> {
     private readonly entityRepository: Repository<TEntity>
   ) { }
 
-  async create(createProductDto: TDto) {
+  async create(createEntityDto: TDto) {
     try {
-      const entity = this.entityRepository.create(createProductDto as DeepPartial<TEntity>);
+      const entity = this.entityRepository.create(createEntityDto as DeepPartial<TEntity>);
       await this.entityRepository.save(entity);
       return entity;
     } catch (error) {
@@ -27,21 +28,20 @@ export abstract class BaseService<TEntity extends BaseEntity, TDto> {
 
   findAll(
     paginationDto?: PaginationDto,
-    where?: FindOptionsWhere<TEntity>[] | FindOptionsWhere<TEntity>,
-    relations?: string[]
+    where: FindOptionsWhere<TEntity>[] | FindOptionsWhere<TEntity> = {},
+    relations: string[] = []
   ) {
 
     const take = paginationDto?.take ?? 10;
     const skip = paginationDto?.skip ?? 0;
-  
+
     return this.entityRepository.find({
       take: paginationDto ? take : undefined,
-      skip: paginationDto ? skip : undefined, 
-      where: where || {}, 
-      relations: relations || [], 
+      skip: paginationDto ? skip : undefined,
+      where: where,
+      relations,
     });
   }
-
   async findOne(term: string) {
     const entity = await this.entityRepository.findOne({
       where: { id: term } as FindOptionsWhere<TEntity>,
@@ -53,23 +53,30 @@ export abstract class BaseService<TEntity extends BaseEntity, TDto> {
     return entity;
   }
 
-  async findOneBy(terms: Record<string, any>): Promise<TEntity> {
+  async findOneBy(
+    where: FindOptionsWhere<TEntity> | FindOptionsWhere<TEntity>[],
+    relations: string[] = []
+  ): Promise<TEntity> {
+
     const entity = await this.entityRepository.findOne({
-      where: terms as FindOptionsWhere<TEntity>,
+      where,
+      relations,
     });
 
+
     if (!entity) {
-      throw new NotFoundException(`Entity with terms ${JSON.stringify(terms)} not found`);
+      const conditions = Array.isArray(where) ? JSON.stringify(where) : JSON.stringify([where]);
+      throw new NotFoundException(`Entity not found with conditions: ${conditions}`);
     }
 
     return entity;
   }
 
-  async update(id: string, updateProductDto: DeepPartial<TEntity>) {
+  async update(id: string, updateEntityDto: DeepPartial<TEntity>) {
 
     const entity = await this.entityRepository.preload({
       id: id,
-      ...updateProductDto
+      ...updateEntityDto
     });
 
     if (!entity) throw new NotFoundException(`T with id: ${id} not found`);
@@ -88,13 +95,13 @@ export abstract class BaseService<TEntity extends BaseEntity, TDto> {
     await this.entityRepository.remove(entity);
   }
 
-  private handleDBExceptions(error: any) {
+  protected handleDBExceptions(error: any): never {
 
     if (error.code === '23505')
       throw new BadRequestException(error.detail);
 
     this.logger.error(error)
-    throw new InternalServerErrorException('Unexpected error, check server logs');
+    throw error;
   }
 
 }

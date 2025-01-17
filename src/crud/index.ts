@@ -15,17 +15,20 @@ export function crud(options: Options): Rule {
 
   return async (tree: Tree, context: SchematicContext) => {
 
-    options.name = stringUtil.replaceUnderscoresWithHyphens(options.table);
+    options.name = options.entity?.trim()
+    ? stringUtil.toKebabCase(options.entity)
+    : stringUtil.replaceUnderscoresWithHyphens(options.table);
 
+    
     const metadata: ColumnMetadata[] = await PostgresService.executeQuery<ColumnMetadata>(QUERY_METADA_FROM_TABLE, [options.table]);
 
-    const className = stringUtil.toClaseName(options.table);
+    const className = stringUtil.toClaseName(options.name);
     const pathFileName = stringUtil.replaceUnderscoresWithHyphens(options.name);
 
     const entity = createEntity(metadata, className);
-    const dtoContent = createDTO(metadata, `Create${className}`);
+    const dtoContent = createDTO(metadata, `Create${className}`, pathFileName);
 
-    tree.create(`${options.path}/${pathFileName}/dto/create-${pathFileName}.dto.ts`, dtoContent);
+    tree.create(`${options.path}/${pathFileName}/dtos/create-${pathFileName}.dto.ts`, dtoContent);
     tree.create(`${options.path}/${pathFileName}/entities/${pathFileName}.entity.ts`, entity);
 
 
@@ -45,7 +48,7 @@ export function crud(options: Options): Rule {
       createGenericComponents({
         options: options,
         templatePath: '../common/files/nest-crud-generic/',
-        targetPath: `${options.path}/common/`
+        targetPath: `${options.path}/common`
       }),
       addNodeDependency({
         "pg": "^8.13.1",
@@ -57,7 +60,7 @@ export function crud(options: Options): Rule {
         "@nestjs/typeorm": "^10.0.2"
       }),
       addModuleToAppImports(
-        `${stringUtil.toClaseName(options.table)}Module`,
+        `${stringUtil.toClaseName(options.name)}Module`,
         `./${pathFileName}/${pathFileName}.module`,
         options.path
       ),

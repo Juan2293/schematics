@@ -1,11 +1,20 @@
 export const QUERY_METADA_FROM_TABLE = `
-SELECT
+ 
+    
+   SELECT
     col.column_name AS name,
     col.data_type AS type,
     col.is_nullable AS nullable,
     col.table_name AS table,
     CASE WHEN pk.column_name IS NOT NULL THEN true ELSE false END AS pk,
-    CASE WHEN uq.column_name IS NOT NULL THEN true ELSE false END AS unique
+    CASE WHEN uq.column_name IS NOT NULL THEN true ELSE false END AS unique,
+    col.character_maximum_length AS length, -- Longitud de la columna
+    -- Para obtener los valores del enum, si la columna es de tipo ENUM
+    CASE
+        WHEN col.data_type = 'USER-DEFINED' AND enum_info.enum_type IS NOT NULL THEN
+            enum_info.enum_values
+        ELSE NULL
+    END AS enum_values
 FROM
     information_schema.columns AS col
 LEFT JOIN (
@@ -34,6 +43,19 @@ LEFT JOIN (
     WHERE
         tc.constraint_type = 'UNIQUE'
 ) AS uq ON col.column_name = uq.column_name AND col.table_name = uq.table_name
+LEFT JOIN (
+    SELECT
+        e.enumtypid,
+        t.typname AS enum_type,
+        string_agg(e.enumlabel, ', ') AS enum_values
+    FROM
+        pg_enum e
+    JOIN
+        pg_type t ON t.oid = e.enumtypid
+    GROUP BY
+        e.enumtypid, t.typname
+) AS enum_info ON enum_info.enum_type = col.udt_name
 WHERE
-    col.table_name = $1;
+    col.table_name = $1
+    order by 5 desc, 2 asc;
   `;

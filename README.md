@@ -88,5 +88,5 @@ schematics example-schematics-dc:crud --name=brand
 
 Probar Schematic, el valor del  atributo __name__ será el nombre del modulo creado.
 ```
-npm run crud -- --table=product --path=src/  --dry-run=false
+npm run crud -- --table=product --entity=Product --path=src/  --dry-run=false
 ```

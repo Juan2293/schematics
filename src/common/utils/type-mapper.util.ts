@@ -1,8 +1,9 @@
 import { ColumnMetadata } from "../interfaces/metadata.interface";
+import { StringUtil } from "./string.util";
 
 export class TypeMapperUtil {
 
-  static mapSqlTypeToTsType(sqlType: string): string {
+  static mapSqlTypeToTsType(sqlType: string, name: string = ''): string {
     switch (sqlType.toLowerCase()) {
       // Numeric Types
       case 'integer':
@@ -31,7 +32,11 @@ export class TypeMapperUtil {
       case 'time':
       case 'timestamp':
       case 'timestamp with time zone':
+      case 'timestamp without time zone':
         return 'Date';
+
+      case 'user-defined':
+        return `${StringUtil.toClaseName(name)}`
 
       default:
         return 'any';
@@ -48,7 +53,7 @@ export class TypeMapperUtil {
     }
   }
 
-  static mapSqlTypeToTsValidation(sqlType: string): string {
+  static mapSqlTypeToTsValidation(sqlType: string, name: string = ''): string {
     switch (sqlType.toLowerCase()) {
       // Integer Types
       case 'integer':
@@ -81,10 +86,14 @@ export class TypeMapperUtil {
       case 'timestamp':
       case 'timestamp with time zone':
         return '@IsDate()';
+
+      case 'user-defined':
+        return `@IsEnum(${StringUtil.toClaseName(name)})`
   
       default:
         return '';
     }
+    
   }
 
 
@@ -118,8 +127,10 @@ export class TypeMapperUtil {
       case 'timestamp with time zone':
       case 'timestamp without time zone':
         return 'timestamp';
+      case 'user-defined':
+        return `enum`
       default:
-        throw new Error(`El tipo SQL "${sqlType}" no está soportado`);
+        return 'any';
     }
   }
 
@@ -138,8 +149,16 @@ export class TypeMapperUtil {
     const ormType = TypeMapperUtil.mapSqlTypeToOrmType(column.type);
     let columnDecorator = `@Column({ name: '${column.name}', type: '${ormType}'`;
 
+    if(column.type.toLocaleLowerCase()==='user-defined'){
+      columnDecorator += `, enum: ${StringUtil.toClaseName(column.name)}`;
+    }
+    
     if(column.unique){
       columnDecorator += `, unique: true`;
+    }
+
+    if(column.length){
+      columnDecorator += `, length: ${column.length}`;
     }
 
     columnDecorator += ' })';

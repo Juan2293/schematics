@@ -1,14 +1,14 @@
-import { Body, Controller, Get, Param, Patch, Post, Delete, Query } from '@nestjs/common';
-import {  <%= classify(name) %>Service } from './<%= dasherize(name) %>.service';
-import {  Create<%= classify(name) %>Dto } from './dto/create-<%= dasherize(name) %>.dto';
-import {  Update<%= classify(name) %>Dto } from './dto/update-<%= dasherize(name) %>.dto';
+import { Body, Controller, Get, Param, Patch, Post, Delete, Query, Inject } from '@nestjs/common';
+import { I<%= classify(name) %>Service } from './interfaces/<%= dasherize(name) %>.service.interface';
+import {  Create<%= classify(name) %>Dto } from './dtos/create-<%= dasherize(name) %>.dto';
+import {  Update<%= classify(name) %>Dto } from './dtos/update-<%= dasherize(name) %>.dto';
 import { PaginationDto } from '../common/dtos/pagination.dto';
 
 @Controller('<%= dasherize(name) %>')
 export class <%= classify(name) %>Controller {
 
     constructor(
-        private readonly <%= camelize(name) %>Service:<%= classify(name) %>Service
+        @Inject('I<%= classify(name) %>Service') private readonly <%= camelize(name) %>Service:I<%= classify(name) %>Service
     ){}
 
     @Get()

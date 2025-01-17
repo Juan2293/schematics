@@ -73,40 +73,7 @@ describe('BaseService', () => {
             await expect(service.create(mockDto)).rejects.toThrow(BadRequestException);
         });
 
-        it('debería lanzar un InternalServerErrorException para otros errores', async () => {
-            const mockDto = { name: 'Entity' };
-
-            repository.create.mockReturnValue(mockDto as MockEntity);
-            repository.save.mockRejectedValue(new Error('Unexpected Error'));
-
-            await expect(service.create(mockDto)).rejects.toThrow(InternalServerErrorException);
-        });
-
     });
-
-    // describe('findAll', () => {
-    //     it('debería usar los valores predeterminados si no se proporcionan `take` y `skip`', async () => {
-    //         const mockEntities = [{ id: '1', name: 'Test Entity' }];
-    //         repository.find.mockResolvedValue(mockEntities);
-
-    //         const paginationDto = {}; // No se proporcionan valores
-    //         const result = await service.findAll(paginationDto);
-
-    //         expect(repository.find).toHaveBeenCalledWith({ take: 10, skip: 0 }); // Valores por defecto
-    //         expect(result).toEqual(mockEntities);
-    //     });
-
-    //     it('debería usar los valores proporcionados para `take` y `skip`', async () => {
-    //         const mockEntities = [{ id: '1', name: 'Test Entity' }];
-    //         repository.find.mockResolvedValue(mockEntities);
-
-    //         const paginationDto = { take: 5, skip: 2 }; // Valores proporcionados
-    //         const result = await service.findAll(paginationDto);
-
-    //         expect(repository.find).toHaveBeenCalledWith({ take: 5, skip: 2 });
-    //         expect(result).toEqual(mockEntities);
-    //     });
-    // });
 
     describe('findOne', () => {
         it('debería devolver una entidad por id', async () => {
@@ -139,6 +106,20 @@ describe('BaseService', () => {
 
             expect(repository.findOne).toHaveBeenCalledWith({
                 where: { name: 'Test Entity' },
+                relations: [],
+            });
+            expect(result).toEqual(mockEntity);
+        });
+
+        it('debería devolver una entidad con las relaciones proporcionadas', async () => {
+            const mockEntity = { id: '1', name: 'Test Entity', related: { id: '2' } };
+            repository.findOne.mockResolvedValue(mockEntity);
+
+            const result = await service.findOneBy({ id: '1' }, ['related']);
+
+            expect(repository.findOne).toHaveBeenCalledWith({
+                where: { id: '1' },
+                relations: ['related'],
             });
             expect(result).toEqual(mockEntity);
         });
@@ -147,10 +128,45 @@ describe('BaseService', () => {
             repository.findOne.mockResolvedValue(null);
 
             await expect(service.findOneBy({ name: 'Nonexistent' })).rejects.toThrow(
-                new NotFoundException(`Entity with provided search terms not found`),
+                new NotFoundException(`Entity not found with conditions: [{"name":"Nonexistent"}]`),
             );
+
+            expect(repository.findOne).toHaveBeenCalledWith({
+                where: { name: 'Nonexistent' },
+                relations: [],
+            });
+        });
+
+        it('debería manejar múltiples condiciones en el where', async () => {
+            const mockEntity = { id: '1', name: 'Test Entity' };
+            repository.findOne.mockResolvedValue(mockEntity);
+
+            const whereConditions = [{ id: '1' }, { name: 'Test Entity' }];
+            const result = await service.findOneBy(whereConditions);
+
+            expect(repository.findOne).toHaveBeenCalledWith({
+                where: whereConditions,
+                relations: [],
+            });
+            expect(result).toEqual(mockEntity);
+        });
+
+        it('debería manejar condiciones con relaciones vacías', async () => {
+            const mockEntity = { id: '1', name: 'Test Entity' };
+            repository.findOne.mockResolvedValue(mockEntity);
+
+            const result = await service.findOneBy({ id: '1' });
+
+            expect(repository.findOne).toHaveBeenCalledWith({
+                where: { id: '1' },
+                relations: [],
+            });
+            expect(result).toEqual(mockEntity);
         });
     });
+
+
+
 
     describe('update', () => {
         it('debería actualizar y devolver la entidad', async () => {
@@ -181,11 +197,11 @@ describe('BaseService', () => {
             repository.preload.mockResolvedValue(mockEntity);
             repository.save.mockRejectedValue(new Error('DB error')); // Simula un error en save()
 
-            const handleDBExceptionsSpy = jest.spyOn(service as any, 'handleDBExceptions'); 
+            const handleDBExceptionsSpy = jest.spyOn(service as any, 'handleDBExceptions');
 
             await expect(
                 service.update('1', { name: 'Updated Entity' }),
-            ).rejects.toThrow(Error); 
+            ).rejects.toThrow(Error);
 
             expect(repository.preload).toHaveBeenCalledWith({
                 id: '1',

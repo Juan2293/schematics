@@ -6,4 +6,6 @@ export interface ColumnMetadata {
     table:        string;
     pk:           boolean;
     unique:       boolean;
+    length:       number;
+    enum_values:  string;
 }
